@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+
+<body>
+	<script>
+		async function a() {
+			const response = await fetch('http://localhost:8000/register', {
+				method: 'POST',
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					name: "TestUSer2Name",
+					surname: "TestUSer2Surname",
+					username: "testuser2",
+					password: "1",
+				}),
+			});
+			console.log(response);
+			return response.json();
+		}
+		a().then((res) => {
+			console.log(res);
+		})
+	</script>
+</body>
+
+</html>

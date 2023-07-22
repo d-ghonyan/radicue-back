@@ -2,10 +2,18 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
 {
+	u_name: {
+		type: String,
+		required: "Name is required",
+	},
+	u_surname: {
+		type: String,
+		required: "Surname is required",
+	},
 	username:
 	{
 		type: String,
-		required: "Name is required",
+		required: "Username is required",
 	},
 	password:
 	{
@@ -15,9 +23,10 @@ const UserSchema = new mongoose.Schema(
 	reports: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Report' } ],
 });
 
+///TODO patient id?
 const ReportSchema = new mongoose.Schema(
 {
-	user:  [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ],
+	user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 	prompt:
 	{
 		type: String,
@@ -27,6 +36,14 @@ const ReportSchema = new mongoose.Schema(
 	{
 		type: String,
 		required: "Generated response is required",
+	},
+	p_name: {
+		type: String,
+		required: "Patient name is required",
+	},
+	p_surname: {
+		type: String,
+		required: "Patient surname is required",
 	},
 });
 
