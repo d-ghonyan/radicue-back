@@ -19,74 +19,13 @@ const config = new Configuration({
 
 const app = express();
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-
-const publicPath = path.join(__dirname, '../public')
-const viewsPath = path.join(__dirname, '../templates/views')
-const partialsPath = path.join(__dirname, '../templates/partials')
-
-app.use(express.static(publicPath));
-
-app.set('view engine', 'hbs');
-
-app.set('views', viewsPath);
-
-hbs.registerPartials(partialsPath);
-
 app.use(cors());
-
 app.use(express.json());
 
 const openai = new OpenAIApi(config);
 
-app.post("/chat", async (req, res) => {
-	const { prompt } = req.body;
-
-	// const completion = await openai.createCompletion({
-	// 	model: "text-davinci-003",
-	// 	max_tokens: 512,
-	// 	temperature: 0,
-	// 	prompt: prompt,
-	// });
-
-	// console.log(completion, completion.data);
-
-	res.send(completion.data.choices[0].text);
-});
-
-
-app.get("/testchat", async (req, res) => {
-	const { prompt } = { prompt: "How is the weather today" };
-
-	const rep = {
-		p_name: 'Patient2',
-		p_surname: 'Klor',
-		prompt: prompt,
-		generated: "idk",
-		user: mongoose.Types.ObjectId('64b702d4060456011e7f4740'),
-	}
-
-	const report = new Report(rep);
-	await report.save();
-
-	const found = await Report.findOne({ generated: "idk" }).populate('user');
-
-	console.log(found, found.user);
-
-	// const completion = await openai.createCompletion({
-	// 	model: "text-davinci-003",
-	// 	max_tokens: 512,
-	// 	temperature: 0,
-	// 	prompt: prompt,
-	// });
-
-	// console.log(completion, completion.data);
-
-	// res.send(completion.data.choices[0].text);
-});
-
 app.post('/report', async (req, res) => {
-
+	
 	const { prompt, user, p_name, p_surname } = req.query;
 
 	if (!prompt || !user || !p_name || !p_surname)
@@ -180,10 +119,13 @@ app.post('/register', async (req, res) => {
 
 export { app };
 
-//const report = await Report.create({ user_id: "64b6fa8069fc8d0f8b8842f0", prompt: "hello!", generated: "do you think i'm an ai",});
+// const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-//console.log(report);
+// const publicPath = path.join(__dirname, '../public')
+// const viewsPath = path.join(__dirname, '../templates/views')
+// const partialsPath = path.join(__dirname, '../templates/partials')
 
-//const found = await Report.findOne({_id: "64b6fa8069fc8d0f8b8842f0"}).populate('user_id').exec();
-////const user = User.findOne({_id: "64b6fa8069fc8d0f8b8842f0"});
-//console.log(found);
+// app.use(express.static(publicPath));
+// app.set('view engine', 'hbs');
+// app.set('views', viewsPath);
+// hbs.registerPartials(partialsPath);
