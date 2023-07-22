@@ -10,25 +10,41 @@
 
 <body>
 	<script>
-		async function a() {
-			const response = await fetch('http://localhost:8000/register', {
-				method: 'POST',
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					name: "TestUSer2Name",
-					surname: "TestUSer2Surname",
-					username: "testuser2",
-					password: "1",
-				}),
-			});
-			console.log(response);
+		async function a(url, options) {
+			const response = await fetch( url, options );
+			// console.log(response);
 			return response.json();
 		}
-		a().then((res) => {
+
+		const url = 'http://localhost:8000/report?';
+
+		a(url + new URLSearchParams({
+			prompt: 'Tell me the weather',
+			user: '64bbf3c1f06498353a85ca26',
+			p_name: 'Barev',
+			p_surname: 'Barevyan',
+		}),{
+			method: 'POST',
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}).then((res) => {
 			console.log(res);
-		})
+		});
+		// a(url, {
+		// 	method: 'GET',
+		// 	headers: {
+		// 		"Content-Type": "application/json",
+		// 	},
+		// 	body: JSON.stringify({
+		// 		name: "TestUSer2Name",
+		// 		surname: "TestUSer2Surname",
+		// 		username: "testuser2",
+		// 		password: "1",
+		// 	}),
+		// }).then((res) => {
+		// 	console.log(res);
+		// })
 	</script>
 </body>
 

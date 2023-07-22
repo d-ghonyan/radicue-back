@@ -8,22 +8,22 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
-import {User, Report} from './mongo.js';
+import { User, Report } from './mongo.js';
 import { Configuration, OpenAIApi } from "openai";
 
 dotenv.config();
 
 const config = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
+	apiKey: process.env.OPENAI_API_KEY,
 });
 
 const app = express();
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-const publicPath = path.join(__dirname,'../public')
-const viewsPath = path.join(__dirname,'../templates/views')
-const partialsPath = path.join(__dirname,'../templates/partials')
+const publicPath = path.join(__dirname, '../public')
+const viewsPath = path.join(__dirname, '../templates/views')
+const partialsPath = path.join(__dirname, '../templates/partials')
 
 app.use(express.static(publicPath));
 
@@ -39,7 +39,7 @@ app.use(express.json());
 
 const openai = new OpenAIApi(config);
 
-app.post("/chat", async (req, res)=>{
+app.post("/chat", async (req, res) => {
 	const { prompt } = req.body;
 
 	// const completion = await openai.createCompletion({
@@ -57,7 +57,7 @@ app.post("/chat", async (req, res)=>{
 
 app.get("/testchat", async (req, res) => {
 	const { prompt } = { prompt: "How is the weather today" };
-	
+
 	const rep = {
 		p_name: 'Patient2',
 		p_surname: 'Klor',
@@ -69,7 +69,7 @@ app.get("/testchat", async (req, res) => {
 	const report = new Report(rep);
 	await report.save();
 
-	const found = await Report.findOne({generated : "idk"}).populate('user');
+	const found = await Report.findOne({ generated: "idk" }).populate('user');
 
 	console.log(found, found.user);
 
@@ -85,54 +85,94 @@ app.get("/testchat", async (req, res) => {
 	// res.send(completion.data.choices[0].text);
 });
 
-app.get('/test', async (req, res) => {
-	const user = new User({username: 'admin', password: "admin"});
+app.post('/report', async (req, res) => {
 
-	await user.save();
+	const { prompt, user, p_name, p_surname } = req.query;
 
-	const report = new Report({user: user._id, prompt: "hello?", generated: 'who do you think i am'});
+	if (!prompt || !user || !p_name || !p_surname)
+	{
+		res.status(400).send({ status: 'failed', msg: 'Missing required data' });
+		return ;
+	}
 
-	await report.save();
+	try {
 
-	const found = await Report.findOne({prompt: 'hello?'}).populate('user').exec();
+		const completion = await openai.createCompletion({
+			model: "text-davinci-003",
+			max_tokens: 512,
+			temperature: 0,
+			prompt: prompt,
+		});
 
-	console.log(found, found.username);
+		const generated = completion.data.choices[0].text;
+
+		await new Report({ user, prompt, p_name, p_surname, generated }).save();
+
+		res.send({ status: 'ok', report: generated });
+
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ status: 'failed', msg: 'Server error, check logs' });
+	}
+});
+
+app.post('/login', async (req, res) => {
+
+	const { username, password } = req.body;
+
+	if (!username || !password) {
+		res.status(400).send({ status: 'failed', msg: 'Missing required data' });
+		return;
+	}
+
+	try {
+
+		const user = await User.findOne({ username });
+
+		if (!user || !(await bcrypt.compare(password, user.password))) {
+			res.status(401).send({ status: 'failed', msg: 'Username or password incorrect' });
+			return;
+		}
+
+		res.send({ status: 'ok', msg: 'authenticated', id: user._id }); /// TODO tokens?
+
+	} catch (error) {
+
+		console.log(error);
+		res.status(500).send({ status: 'failed', msg: 'Exception caught, check logs' });
+
+	}
 });
 
 app.post('/register', async (req, res) => {
 
-	console.log('barev');
-
 	const { username, password, name, surname } = req.body;
 
-	if ( !username || !password || !name || !surname )
-	{
-		res.status(400).send({status: 'failed', msg: 'missing required parameter'});
-		return ;
+	if (!username || !password || !name || !surname) {
+		res.status(400).send({ status: 'failed', msg: 'missing required data' });
+		return;
 	}
-	
+
 	try {
 
 		const hashed = await bcrypt.hash(password, 10);
 
 		const findUser = await User.findOne({ username });
 
-		if (findUser)
-		{
+		if (findUser) {
 			res.status(403).send({ status: 'failed', msg: 'User already exists' });
-			return ;
+			return;
 		}
 
 		const user = new User({ username, password: hashed, u_name: username, u_surname: surname });
 
 		await user.save();
 
-		res.send({ status: 'ok', msg: 'User succesfully created', user: user._id });
+		res.send({ status: 'ok', msg: 'User succesfully created', user: user._id }); /// TODO tokens, it is
 
 	} catch (error) {
 
 		console.log('MongoDB error: ' + error);
-
 		res.send({ status: 'failed', msg: 'Database error' });
 
 	}
