@@ -16,36 +16,43 @@
 			return response.json();
 		}
 
-		const url = 'http://localhost:8000/report?';
+		const url = 'http://localhost:8000/testreport?';
 
-		a(url + new URLSearchParams({
-			prompt: 'Tell me the weather',
-			user: '64bbf3c1f06498353a85ca26',
-			p_name: 'Barev',
-			p_surname: 'Barevyan',
-		}),{
-			method: 'POST',
+		// a(url + new URLSearchParams({
+		// 	prompt: 'Ohmagad',
+		// 	_id: '64bbf3c1f06498353a85ca26',
+		// 	p_name: 'Barev',
+		// 	p_surname: 'Barevyan',
+		// }),{
+		// 	method: 'POST',
+		// 	headers: {
+		// 		"Content-Type": "application/json",
+		// 	},
+		// }).then((res) => {
+		// 	console.log(res);
+		// });
+
+		a('http://localhost:8000/reports?' + new URLSearchParams({
+			_id: '64bbf3c1f06498353a85ca26', 
+		}), {
+			method: 'GET',
 			headers: {
 				"Content-Type": "application/json",
 			},
 		}).then((res) => {
 			console.log(res);
-		});
-		// a(url, {
-		// 	method: 'GET',
-		// 	headers: {
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify({
-		// 		name: "TestUSer2Name",
-		// 		surname: "TestUSer2Surname",
-		// 		username: "testuser2",
-		// 		password: "1",
-		// 	}),
-		// }).then((res) => {
-		// 	console.log(res);
-		// })
-	</script>
+		})
+
+
+
+		// body: JSON.stringify({
+		// 	user: '64bbf3c1f06498353a85ca26',
+		// 	name: "TestUSer2Name",
+		// 	surname: "TestUSer2Surname",
+		// 	username: "testuser2",
+		// 	password: "1",
+		// }),
+		</script>
 </body>
 
 </html>

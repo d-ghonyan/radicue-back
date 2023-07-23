@@ -26,9 +26,9 @@ const openai = new OpenAIApi(config);
 
 app.post('/report', async (req, res) => {
 	
-	const { prompt, user, p_name, p_surname } = req.query;
+	const { prompt, _id, p_name, p_surname } = req.query;
 
-	if (!prompt || !user || !p_name || !p_surname)
+	if (!prompt || !_id || !p_name || !p_surname)
 	{
 		res.status(400).send({ status: 'failed', msg: 'Missing required data' });
 		return ;
@@ -43,9 +43,14 @@ app.post('/report', async (req, res) => {
 			prompt: prompt,
 		});
 
+		const user = await User.findOne({ _id });
 		const generated = completion.data.choices[0].text;
+		const report = new Report({ user: _id, prompt, p_name, p_surname, generated });
 
-		await new Report({ user, prompt, p_name, p_surname, generated }).save();
+		user.reports.push(report._id);
+
+		await report.save();
+		await user.save();
 
 		res.send({ status: 'ok', report: generated });
 
@@ -54,6 +59,30 @@ app.post('/report', async (req, res) => {
 		res.status(500).send({ status: 'failed', msg: 'Server error, check logs' });
 	}
 });
+
+app.get('/reports', async (req, res) => {
+
+	const { _id } = req.query;
+
+	if (!_id)
+	{
+		res.status(400).send({ status: 'failed', msg: 'Missing required data' });
+		return ;
+	}
+
+	try {
+		
+		const user = await User.findOne({ _id }).populate('reports');
+
+		console.log(user);
+		res.send({ status: 'ok', reports: user.reports });
+
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ status: 'failed', msg: 'Exception caught, check logs' });
+	}
+
+})
 
 app.post('/login', async (req, res) => {
 
@@ -73,7 +102,7 @@ app.post('/login', async (req, res) => {
 			return;
 		}
 
-		res.send({ status: 'ok', msg: 'authenticated', id: user._id }); /// TODO tokens?
+		res.send({ status: 'ok', msg: 'authenticated', _id }); /// TODO tokens?
 
 	} catch (error) {
 
@@ -107,13 +136,44 @@ app.post('/register', async (req, res) => {
 
 		await user.save();
 
-		res.send({ status: 'ok', msg: 'User succesfully created', user: user._id }); /// TODO tokens, it is
+		res.send({ status: 'ok', msg: 'User succesfully created', _id: user._id }); /// TODO tokens, it is
 
 	} catch (error) {
 
 		console.log('MongoDB error: ' + error);
 		res.send({ status: 'failed', msg: 'Database error' });
 
+	}
+});
+
+//TEST
+
+app.post('/testreport', async (req, res) => {
+	
+	const { prompt, _id, p_name, p_surname } = req.query;
+
+	if (!prompt || !_id || !p_name || !p_surname)
+	{
+		res.status(400).send({ status: 'failed', msg: 'Missing required data' });
+		return ;
+	}
+
+	try {
+
+		const user = await User.findOne({ _id });
+		const generated = "Hello everynyan";
+		const report = new Report({ user: _id, prompt, p_name, p_surname, generated });
+
+		user.reports.push(report._id);
+
+		await report.save();
+		await user.save();
+
+		res.send({ status: 'ok', report: generated });
+
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ status: 'failed', msg: 'Server error, check logs' });
 	}
 });
 
